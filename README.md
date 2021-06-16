@@ -34,7 +34,7 @@ redis					3.5.3
 
 图1：
 
-![image-1](.\image-1.png)
+![image-1](image/image-1.png)
 
 如图1所示，p_list 为筛选掉某个特定角色的列表，data_src 为公会战数据的相对地址，这些可根据需要自行修改。
 
@@ -42,7 +42,7 @@ redis					3.5.3
 
 图2：
 
-![image-2](.\image-2.png)
+![image-2](image/image-2.png)
 
 如图2所示，p_list 为筛选掉某个特定角色的列表，file_src 为输出结果的文件路径，这些可根据需要自行修改。
 
