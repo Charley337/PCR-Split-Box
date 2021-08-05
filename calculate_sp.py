@@ -3,9 +3,17 @@
 import redis
 import json
 
+# 读取配置文件
+configure_src = r'./configures.json'
+file = open(configure_src, 'r', encoding='utf-8')
+data_json = json.load(file)
+print(data_json)
+print(data_json['stage'])
+print(data_json['ban_list'])
+
 # 重要参数
-p_list = ['圣锤', '情病', '流夏', '春猫']
-file_src = r'./out_2.txt'
+p_list = data_json['ban_list']
+file_src = './out_' + data_json['stage'] + '.txt'
 
 conn = redis.Redis()
 

@@ -18,35 +18,55 @@ redis					3.5.3
 
 ## 运行方法
 
-首先获取公会战的数据，可从此处获取https://docs.qq.com/sheet/DWkdtR2djbnFiUGRk?tab=ltc6xo&groupUin=21YR5EVZ7QKy8nD7P03Pyw%25253D%25253D&ADUIN=1035977573&ADSESSION=1623336994&ADTAG=CLIENT.QQ.5803_.0&ADPUBNO=27129
+* 首先获取公会战的数据，[可从此处获取](https://docs.qq.com/sheet/DWkdtR2djbnFiUGRk?tab=ltc6xo&groupUin=21YR5EVZ7QKy8nD7P03Pyw%25253D%25253D&ADUIN=1035977573&ADSESSION=1623336994&ADTAG=CLIENT.QQ.5803_.0&ADPUBNO=27129)
 
-获取数据后，excel表格命名规则：
+* 获取数据后，excel表格命名规则：
 
-一阶段：stage_1.xlsx
+  一阶段：stage_1.xlsx
 
-二阶段：stage_2.xlsx
+  二阶段：stage_2.xlsx
 
-三阶段：stage_3.xlsx
+  三阶段：stage_3.xlsx
 
-放入同级目录中。
+  放入同级目录中。
 
-### data_maker_sp.py 文件
+* 修改 configures.json 配置文件
 
-图1：
+  stage 为当前阶段，A面对应"1"，B面对应"2"，C面对应"3"
 
-![image-1](image/image-1.png)
+  ban_list 为禁用的角色
 
-如图1所示，p_list 为筛选掉某个特定角色的列表，data_src 为公会战数据的相对地址，这些可根据需要自行修改。
+  修改时注意格式
 
-### calculate_sp.py 文件
+  ![](image/image_1.png)
 
-图2：
+* 打开 redis-server 服务器
 
-![image-2](image/image-2.png)
+* 执行 data_maker_sp.py 文件
 
-如图2所示，p_list 为筛选掉某个特定角色的列表，file_src 为输出结果的文件路径，这些可根据需要自行修改。
+* 执行 calculate_sp.py 文件
 
-#### 两个 p_list 必须要一致
+  然后漫长的等待。。。。。。
+
+  结果输出在对应的 out 文件中
+
+* 接下来可以按想要打的BOSS组合进行搜索，执行 search_by_kings.py 文件
+
+  根据提示输入BOSS组合，例如我想要打四王、五王、五王，那么应当输入4，5，5
+
+  注意，输入数字应当严格按升序排列
+
+  输出结果在 search.txt 文件中
+
+  ![](image/image_2.png)
+
+ps: 参考命令：
+
+**python data_maker_sp.py** 
+
+**python calculate_sp.py** 
+
+**python search_by_kings.py ** 
 
 ## 注意事项
 

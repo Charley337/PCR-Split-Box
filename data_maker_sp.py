@@ -4,9 +4,17 @@ import xlrd
 import json
 import redis
 
+# 读取配置文件
+configure_src = r'./configures.json'
+file = open(configure_src, 'r', encoding='utf-8')
+data_json = json.load(file)
+print(data_json)
+print(data_json['stage'])
+print(data_json['ban_list'])
+
 # 重要的参数
-p_list = ['圣锤', '情病', '流夏', '春猫']
-data_src = r'./stage_2.xlsx'
+p_list = data_json['ban_list']
+data_src = './stage_' + data_json['stage'] + '.xlsx'
 
 
 # 筛掉没有的角色的函数
