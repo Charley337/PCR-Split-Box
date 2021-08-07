@@ -74,7 +74,7 @@ ps: 参考命令：
 
 **python calculate_sp.py** 
 
-**python search_by_kings.py ** 
+**python search_by_kings.py** 
 
 ## 注意事项
 
