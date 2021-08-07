@@ -59,6 +59,14 @@ redis					3.5.3
   输出结果在 search.txt 文件中
 
   ![](image/image_2.png)
+  
+* 搜索可以使用指令: 
+
+  **python search_by_kings.py 1 5 5 C501** 
+
+  **python search_by_kings.py 1 5 5 C501 C503** 
+
+  **python search_by_kings.py [第一个BOSS] [第二个BOSS] [第三个BOSS] [已经出过的刀标号] ...**   
 
 ps: 参考命令：
 

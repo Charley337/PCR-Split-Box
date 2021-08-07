@@ -51,6 +51,9 @@ else:       # 其余情况通过命令行传参
     # 已经出过什么刀
     done_set = set()
     for i in range(4, len(sys.argv)):
+        if i >= 6:
+            print('输入错误，已经出过的刀最多为2个（出完了还来搜索作甚 TwT）')
+            break
         done_set.add(sys.argv[i])
     print('已经出过的刀：', done_set)
 
