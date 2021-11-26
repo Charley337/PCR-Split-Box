@@ -32,7 +32,41 @@ def is_eligible(f1, f2, f3, kings_list, done_set):
         return False
 
 
-def search(argv):
+def is_eligible_auto(f1, f2, f3, kings_list, done_set):
+    temp = []
+    temp_set = set()
+    loc = f1.find("BOSS：")
+    temp.append(f1[loc + 6])
+    loc = f2.find("BOSS：")
+    temp.append(f2[loc + 6])
+    loc = f3.find("BOSS：")
+    temp.append(f3[loc + 6])
+    # print(temp)
+    loc = f1.find("编号：")
+    loc_2 = f1.find("BOSS：")
+    temp_set.add(f1[loc + 3: loc_2 - 2])
+    loc = f2.find("编号：")
+    loc_2 = f2.find("BOSS：")
+    temp_set.add(f2[loc + 3: loc_2 - 2])
+    loc = f3.find("编号：")
+    loc_2 = f3.find("BOSS：")
+    temp_set.add(f3[loc + 3: loc_2 - 2])
+    # print(temp_set)
+    if temp == kings_list:
+        if temp_set >= done_set:
+            for item in temp_set:
+                if item[1] != "t":
+                    return False
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+def search(argv, mode=None):
+    if mode is None:
+        mode = set()
     global config
     # 开场白
     print("beginning...")
@@ -52,14 +86,19 @@ def search(argv):
     # 读取配置文件
     if len(config) == 0:
         with open("config.json", 'r', encoding='utf-8') as file:
-            config = json.load(file)
+            try:
+                config = json.load(file)
+            except json.decoder.JSONDecodeError:
+                config = dict()
+                config["stage"] = 1
+                config["ban_list"] = ["春猫", "圣千", "圣锤"]
     print('配置文件数据：', config)
     # print(config['stage'])
     # print(config['ban_list'])
 
     # 文件路径
-    file_src = './temp/out_' + config['stage'] + '.txt'
-    file_des = './result.txt'
+    file_src = "./temp/out_{}.txt".format(config["stage"])
+    file_des = "./result.txt"
 
     # 通过命令行输入参数
     print(len(argv))
@@ -112,7 +151,9 @@ def search(argv):
             fight_2 = file.readline()
             fight_3 = file.readline()
             # 判断是否符合要求
-            if is_eligible(fight_1, fight_2, fight_3, kings_list, done_set):
+            if "a" in mode and is_eligible_auto(fight_1, fight_2, fight_3, kings_list, done_set):
+                eligible_list.append([score, fight_1, fight_2, fight_3])
+            elif "a" not in mode and is_eligible(fight_1, fight_2, fight_3, kings_list, done_set):
                 eligible_list.append([score, fight_1, fight_2, fight_3])
             score = file.readline()
         # print(eligible_list)

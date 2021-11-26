@@ -158,14 +158,19 @@ def calculate():
     # 读取配置文件
     if len(config) == 0:
         with open("config.json", "r", encoding="utf-8") as file:
-            config = json.load(file)
+            try:
+                config = json.load(file)
+            except json.decoder.JSONDecodeError:
+                config = dict()
+                config["stage"] = 1
+                config["ban_list"] = ["春猫", "圣千", "圣锤"]
     print(config)
     print(config['stage'])
     print(config['ban_list'])
 
     # 重要参数
-    p_list = config['ban_list']
-    file_src = './temp/out_' + config['stage'] + '.txt'
+    p_list = config["ban_list"]
+    file_src = "./temp/out_{}.txt".format(config['stage'])
 
     with open('./temp/data.json', 'r') as file:
         temp_dict = json.load(file)
