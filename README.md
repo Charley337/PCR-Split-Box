@@ -4,6 +4,10 @@
 
 此代码为公主连接ReDive公会战排刀工具，将公会战的数据导入后即可筛出三刀可行的出刀方案。
 
+新版本v2.0.0:
+
+该版本在原来的算法基础上进行了大幅度调整，不再使用redis数据库
+
 ## 运行环境
 
 操作系统			windows 10
@@ -13,8 +17,6 @@ python				3.9.0
 xlrd					1.2.0
 
 simplejson		3.17.2
-
-redis					3.5.3
 
 ## 运行方法
 
@@ -40,49 +42,54 @@ redis					3.5.3
 
   ![](image/image_1.png)
 
-* 打开 redis-server 服务器
+  或者可以使用命令的方式进行修改：
 
-* 执行 data_maker_sp.py 文件
+  **python main.py --config stage=3** 
 
-* 执行 calculate_sp.py 文件
+  **python main.py --config add ban_list 春猫** 
 
-  然后漫长的等待。。。。。。
+  **python main.py --config remove ban_list 春猫** 
 
-  结果输出在对应的 out 文件中
+* 制作中间数据
 
-* 接下来可以按想要打的BOSS组合进行搜索，执行 search_by_kings.py 文件
+* 计算排刀方案
 
-  根据提示输入BOSS组合，例如我想要打四王、五王、五王，那么应当输入4，5，5
+* 默认用法：**python main.py** 
 
-  注意，输入数字应当严格按升序排列
+  如果没有 ./temp/out_x.txt 文件则计算中间数据，计算排刀方案（可能会有点久）
 
-  输出结果在 search.txt 文件中
+  如果文件已经存在，则进行排刀搜索
 
   ![](image/image_2.png)
-  
+
+* 制作数据指令
+
+  **python main.py -m** 
+
+* 计算排刀指令
+
+  **python main.py -c** 
+
 * 搜索可以使用指令: 
 
-  **python search_by_kings.py 1 5 5 C501** 
+  **python main.py -s 1 5 5 C501** 
 
-  **python search_by_kings.py 1 5 5 C501 C503** 
+  **python main.py -s 1 5 5 C501 C503** 
 
-  **python search_by_kings.py [第一个BOSS] [第二个BOSS] [第三个BOSS] [已经出过的刀标号] ...**   
+  **python main.py -s [第一个BOSS] [第二个BOSS] [第三个BOSS] [已经出过的刀标号] ...**   
+  
+* 自动刀搜索指令：
 
-ps: 参考命令：
+  **python main.py -a 1 5 5 C501** 
 
-**python data_maker_sp.py** 
+  **python main.py -a 1 5 5 C501 C503** 
 
-**python calculate_sp.py** 
+  **python main.py -a [第一个BOSS] [第二个BOSS] [第三个BOSS] [已经出过的刀标号] ...**   
 
-**python search_by_kings.py** 
+  
 
 ## 注意事项
 
-#### 一、运行代码前需要先打开redis-server服务器，过程中必须一直打开。
+算的过程可能有点慢，不过搜索还是挺快的
 
-#### 二、代码运行有先后顺序，先运行 data_maker_sp.py 执行完毕后再运行 calculate_sp.py 注意！注意！不能搞反！
-
-#### 三、calculate_sp.py 执行可能有点慢，属于正常现象，大概需要3—5分钟吧
-
-大概... ㄟ( ▔, ▔ )ㄏ
-
+新版和旧版变化很大（感觉新版改崩了，如果有机会可能出个第三版）
