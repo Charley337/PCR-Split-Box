@@ -1,8 +1,0 @@
-S' -> S
-S -> Sentence
-Sentence -> command mode Plist
-Sentence -> command Plist
-Sentence -> mode Plist
-Sentence -> Plist
-Plist -> param Plist
-Plist ->

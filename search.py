@@ -1,5 +1,5 @@
 import sys
-import json
+import utils
 
 
 # 判断是否符合条件的函数
@@ -84,14 +84,7 @@ def search(argv, mode=None):
         '============================================================================================================')
 
     # 读取配置文件
-    if len(config) == 0:
-        with open("config.json", 'r', encoding='utf-8') as file:
-            try:
-                config = json.load(file)
-            except json.decoder.JSONDecodeError:
-                config = dict()
-                config["stage"] = 1
-                config["ban_list"] = ["春猫", "圣千", "圣锤"]
+    config = utils.check_config(config)
     print('配置文件数据：', config)
     # print(config['stage'])
     # print(config['ban_list'])
@@ -187,7 +180,19 @@ def search(argv, mode=None):
     print('ending')
 
 
+def main():
+    if sys.argv[1] == "-a" or sys.argv[1] == "-A" or sys.argv[1] == "--auto":
+        mode = set()
+        mode.add('a')
+        argv = sys.argv
+        argv.remove(argv[1])
+        search(argv, mode)
+    else:
+        search(sys.argv)
+    return 0
+
+
 config = dict()
 
 if __name__ == "__main__":
-    search(sys.argv)
+    exit(main())
