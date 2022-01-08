@@ -4,6 +4,6 @@
 /*.un~
 /*.json~
 /__pycache__/
-/lr1/
 /*.xlsx
 /trash/
+/config.json
