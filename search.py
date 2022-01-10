@@ -181,7 +181,10 @@ def search(argv, mode=None):
 
 
 def main():
-    if sys.argv[1] == "-a" or sys.argv[1] == "-A" or sys.argv[1] == "--auto":
+    if len(sys.argv) == 1:
+        print("Invalid input. Stop.")
+        return -1
+    elif sys.argv[1] == "-a" or sys.argv[1] == "-A" or sys.argv[1] == "--auto":
         mode = set()
         mode.add('a')
         argv = sys.argv
