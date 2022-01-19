@@ -69,7 +69,6 @@ def search(argv, mode=None):
         mode = set()
     global config
     # 开场白
-    print("beginning...")
     print(
         '============================================================================================================')
     print(
@@ -86,15 +85,12 @@ def search(argv, mode=None):
     # 读取配置文件
     config = utils.check_config(config)
     print('配置文件数据：', config)
-    # print(config['stage'])
-    # print(config['ban_list'])
 
     # 文件路径
     file_src = "./temp/out_{}.txt".format(config["stage"])
     file_des = "./result.txt"
 
     # 通过命令行输入参数
-    print(len(argv))
     if len(argv) == 1:  # 如果等于1，那么启动提示输入参数
         # 输入筛选关键词
         kings_list = [0, 0, 0]
@@ -177,7 +173,6 @@ def search(argv, mode=None):
     # 程序结束
     print(
         '============================================================================================================')
-    print('ending')
 
 
 def main():

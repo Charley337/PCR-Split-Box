@@ -6,6 +6,7 @@ def main():
         config = dict()
         config["stage"] = 1
         config["ban_list"] = ["万圣忍", "万圣兔"]
+        config["miss_list"] = ["圣克", "圣千", "露娜"]
         json.dump(config, fp, ensure_ascii=False)
     with open("stage_1.xlsx", "w", encoding="utf-8") as fp:
         pass

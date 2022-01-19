@@ -56,6 +56,8 @@ simplejson		3.17.2
 
   ban_list 为禁用的角色
 
+  miss_list 为没有抽出来的角色
+
   修改时注意格式
 
   ![](image/image_1.png)
@@ -86,5 +88,5 @@ simplejson		3.17.2
 
 ## 注意事项
 
-计算的过程可能有点慢，不过搜索还是挺快的
+注意修改config.json文件
 

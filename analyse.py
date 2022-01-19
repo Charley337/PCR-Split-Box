@@ -1,290 +1,257 @@
-# TODO: make data and compute
+# TODO: 优化了筛选算法，重构了分析部分
+import utils
 import json
 import xlrd
-import utils
 
 
-# make data
-# 筛掉没有的角色的函数
-def is_princess_existing(p_l, vals):
-    for princess in p_l:
-        for i1 in range(2, 7):
-            if vals[i1] == princess:
-                return False
-    return True
+def is_princess_banned(ban_list, table_row):
+    for i in range(2, 7):
+        if table_row[i] in ban_list:
+            return True
+    return False
 
 
 def make_data():
     global config
     # 读取配置文件
     config = utils.check_config(config)
-    print(config)
-    print(config['stage'])
-    print(config['ban_list'])
-
-    # 重要的参数
-    p_list = config["ban_list"]
-    data_src = "./stage_{}.xlsx".format(config['stage'])
-
+    # 重要参数
+    ban_list = config["ban_list"]
+    data_src = "./stage_{}.xlsx".format(config["stage"])
     # 打开表格
-    data = xlrd.open_workbook(data_src)
-    table = data.sheet_by_index(0)
+    table_file = xlrd.open_workbook(data_src)
+    table = table_file.sheet_by_index(0)
     # 开始制作数据文件
-    dict_line = dict()
-    temp_dict = dict()
     cnt = 0
+    res_item = dict()
+    res_data = dict()
+    print("开始数据预处理")
     for i in range(0, table.nrows):
-        val = table.row_values(i)
-        if val[0] == '' or val[2] == '':
+        table_row = table.row_values(i)
+        if table_row[0] == '' or table_row[2] == '':
             continue
-        # 筛掉没有的角色
-        if not is_princess_existing(p_list, val):
+        # 筛掉禁用的角色
+        if is_princess_banned(ban_list, table_row):
             continue
         # 制作数据
-        if val[2] == 511.0:
-            val[2] = '511'
-        if val[3] == 511.0:
-            val[3] = '511'
-        if val[4] == 511.0:
-            val[4] = '511'
-        if val[5] == 511.0:
-            val[5] = '511'
-        if val[6] == 511.0:
-            val[6] = '511'
-        print(val)
-        dict_line['king_name'] = val[0]
-        dict_line['id'] = val[1]
-        dict_line['princess_1'] = val[2]
-        dict_line['princess_2'] = val[3]
-        dict_line['princess_3'] = val[4]
-        dict_line['princess_4'] = val[5]
-        dict_line['princess_5'] = val[6]
-        dict_line['damage'] = val[7]
-        text_json = json.dumps(dict_line)
-        redis_index = 'pcr_strategies_' + str(cnt)
-        temp_dict[redis_index] = text_json
-        dict_line.clear()
+        for j in range(2, 7):
+            if table_row[j] == 511.0:
+                table_row[j] = "511"
+        res_item["king_name"] = table_row[0]
+        res_item["id"] = table_row[1]
+        res_item["princess_1"] = table_row[2]
+        res_item["princess_2"] = table_row[3]
+        res_item["princess_3"] = table_row[4]
+        res_item["princess_4"] = table_row[5]
+        res_item["princess_5"] = table_row[6]
+        res_item["damage"] = table_row[7]
+        res_index = "pcr_strategies_{}".format(cnt)
+        res_data[res_index] = json.dumps(res_item)
+        res_item.clear()
         cnt += 1
-    temp_json = json.dumps(temp_dict)
-    # 写入文件中
-    with open('./temp/data.json', 'w') as f:
-        f.write(temp_json)
+    res_data = json.dumps(res_data)
+    # 写入文件
+    print("将预处理数据写入 ./temp/data.json 文件中")
+    with open("./temp/data.json", "w") as file:
+        file.write(res_data)
 
 
-# calculate
-def get_multiplying_power(val):
-    if val == 'A1':
-        return 1.0
-    elif val == 'A2':
-        return 1.0
-    elif val == 'A3':
-        return 1.3
-    elif val == 'A4':
-        return 1.3
-    elif val == 'A5':
-        return 1.5
-    elif val == 'B1':
-        return 1.4
-    elif val == 'B2':
-        return 1.4
-    elif val == 'B3':
-        return 1.8
-    elif val == 'B4':
-        return 1.8
-    elif val == 'B5':
-        return 2.0
-    elif val == 'C1':
-        return 2.0
-    elif val == 'C2':
-        return 2.0
-    elif val == 'C3':
-        return 2.5
-    elif val == 'C4':
-        return 2.5
-    elif val == 'C5':
-        return 3.0
-    else:
+# 计算部分
+def get_multiplying_power(boss):
+    global multiplying_power
+    try:
+        return multiplying_power[boss]
+    except:
         return -10.0
 
 
-def get_strategies(data_dict):
+# 用来判断两刀之间是否兼容
+def get_set_number(team1, team2, idx1, idx2):
+    pri_set = set()
+    for i in range(1, 6):
+        if i != idx1:
+            pri_set.add(team1["princess_{}".format(i)])
+        if i != idx2:
+            pri_set.add(team2["princess_{}".format(i)])
+    return len(pri_set)
+
+
+# 判断三刀是否兼容
+def is_compatible(team1, team2, team3, miss_list):
+    # 一刀里面只要有两个没有的角色就不行
+    cnt1 = 0
+    cnt2 = 0
+    cnt3 = 0
+    idx1 = 0
+    idx2 = 0
+    idx3 = 0
+    for i in range(1, 6):
+        if team1["princess_{}".format(i)] in miss_list:
+            cnt1 += 1
+            idx1 = i
+            if cnt1 >= 2:
+                return False
+        if team2["princess_{}".format(i)] in miss_list:
+            cnt2 += 1
+            idx2 = i
+            if cnt2 >= 2:
+                return False
+        if team3["princess_{}".format(i)] in miss_list:
+            cnt3 += 1
+            idx3 = i
+            if cnt3 >= 2:
+                return False
+    princess_set = set()
+    for i in range(1, 6):
+        if i != idx1:
+            princess_set.add(team1["princess_{}".format(i)])
+        if i != idx2:
+            princess_set.add(team2["princess_{}".format(i)])
+        if i != idx3:
+            princess_set.add(team3["princess_{}".format(i)])
+    if len(princess_set) < 12:
+        return False
+    if get_set_number(team1, team2, idx1, idx2) < 8:
+        return False
+    if get_set_number(team2, team3, idx2, idx3) < 8:
+        return False
+    if get_set_number(team1, team3, idx1, idx3) < 8:
+        return False
+    return True
+
+
+def get_strategies(data, miss_list):
     # 计算所有三刀并按伤害降序排序
     all_strategies = []
-    prefix = 'pcr_strategies_'
     cnt = 0
-    redis_index = prefix + str(cnt)
+    index = "pcr_strategies_{}".format(cnt)
     try:
-        content = data_dict[redis_index]
-    except Exception as e:
-        content = None
+        item = data[index]
+    except:
+        item = None
     # 获取所有刀的数据，得到一个列表
-    while content is not None:
-        dict_line = json.loads(content)
-        all_strategies.append(dict_line)
+    while item is not None:
+        item = json.loads(item)
+        all_strategies.append(item)
         # 依次递推
         cnt += 1
-        redis_index = prefix + str(cnt)
+        index = "pcr_strategies_{}".format(cnt)
         try:
-            content = data_dict[redis_index]
-        except Exception as e:
-            content = None
-    print(all_strategies)
+            item = data[index]
+        except:
+            item = None
     # 根据列表信息排刀
     # 三重循环，复杂度为O(n^3)
-    all_feasible = []
+    result = dict()
+    result["best_feasible"] = []
+    print("开始筛选")
     for i in range(0, len(all_strategies)):
-        # 制作公主集合，最后判断元素个数是否大于等于4 （这好像是废话）
-        set_princess = set()
-        set_princess.add(all_strategies[i]['princess_1'])
-        set_princess.add(all_strategies[i]['princess_2'])
-        set_princess.add(all_strategies[i]['princess_3'])
-        set_princess.add(all_strategies[i]['princess_4'])
-        set_princess.add(all_strategies[i]['princess_5'])
-
-        set_princess_i = set_princess.copy()
         for j in range(i + 1, len(all_strategies)):
-            # 制作公主集合，最后判断元素个数是否大于等于8
-            set_princess = set_princess_i.copy()
-            set_princess.add(all_strategies[j]['princess_1'])
-            set_princess.add(all_strategies[j]['princess_2'])
-            set_princess.add(all_strategies[j]['princess_3'])
-            set_princess.add(all_strategies[j]['princess_4'])
-            set_princess.add(all_strategies[j]['princess_5'])
-            if len(set_princess) < 8:
-                continue
-            set_princess_j = set_princess.copy()
             for k in range(j + 1, len(all_strategies)):
-                # 先判断元素个数是否大于等于12
-                set_princess = set_princess_j.copy()
-                set_princess.add(all_strategies[k]['princess_1'])
-                set_princess.add(all_strategies[k]['princess_2'])
-                set_princess.add(all_strategies[k]['princess_3'])
-                set_princess.add(all_strategies[k]['princess_4'])
-                set_princess.add(all_strategies[k]['princess_5'])
-                if len(set_princess) < 12:
-                    continue
-                # 再判断第一刀和第三刀是否兼容
-                set_princess = set_princess_i.copy()
-                set_princess.add(all_strategies[k]['princess_1'])
-                set_princess.add(all_strategies[k]['princess_2'])
-                set_princess.add(all_strategies[k]['princess_3'])
-                set_princess.add(all_strategies[k]['princess_4'])
-                set_princess.add(all_strategies[k]['princess_5'])
-                if len(set_princess) < 8:
-                    continue
-                # 最后判断第二刀和第三刀是否兼容
-                set_princess = set()
-                set_princess.add(all_strategies[j]['princess_1'])
-                set_princess.add(all_strategies[j]['princess_2'])
-                set_princess.add(all_strategies[j]['princess_3'])
-                set_princess.add(all_strategies[j]['princess_4'])
-                set_princess.add(all_strategies[j]['princess_5'])
-                set_princess.add(all_strategies[k]['princess_1'])
-                set_princess.add(all_strategies[k]['princess_2'])
-                set_princess.add(all_strategies[k]['princess_3'])
-                set_princess.add(all_strategies[k]['princess_4'])
-                set_princess.add(all_strategies[k]['princess_5'])
-                if len(set_princess) < 8:
-                    continue
-                # 到此为止说明三刀都兼容
-                print('yes' + ' i=', i, ' j=', j, ' k=', k)
-                # 计算毛分
-                score = int(float(all_strategies[i]['damage'][:-1]) * float(get_multiplying_power(all_strategies[i]['king_name'])))
-                score += int(float(all_strategies[j]['damage'][:-1]) * float(get_multiplying_power(all_strategies[j]['king_name'])))
-                score += int(float(all_strategies[k]['damage'][:-1]) * float(get_multiplying_power(all_strategies[k]['king_name'])))
-                dict_res_line = dict()
-                dict_res_line['first_team'] = all_strategies[i].copy()
-                dict_res_line['second_team'] = all_strategies[j].copy()
-                dict_res_line['third_team'] = all_strategies[k].copy()
-                dict_res_line['score'] = score
-                all_feasible.append(dict_res_line)
-    # 此时得到all_feasible列表为所有可行组合（乱序）
-    # 接下来开始排序
-    print('开始排序')
-    print('all_feasible:', len(all_feasible))
-    for i in range(0, len(all_feasible)):
-        max_score = all_feasible[i]['score']
-        max_loc = i
-        for j in range(i + 1, len(all_feasible)):
-            if max_score < all_feasible[j]['score']:
-                max_score = all_feasible[j]['score']
-                max_loc = j
-        if max_loc != i:
-            temp = all_feasible[i]
-            all_feasible[i] = all_feasible[max_loc]
-            all_feasible[max_loc] = temp
-        print('i=', i, ' finish')
-    print('排序结束')
-    dict_res = dict()
-    # 取全部
-    dict_res['number'] = len(all_feasible)
-    dict_res['best_feasible'] = all_feasible
-    return dict_res
+                if is_compatible(all_strategies[i], all_strategies[j], all_strategies[k], miss_list):
+                    # 计算毛分
+                    score = int(float(all_strategies[i]['damage'][:-1]) * float(
+                        get_multiplying_power(all_strategies[i]['king_name'])))
+                    score += int(float(all_strategies[j]['damage'][:-1]) * float(
+                        get_multiplying_power(all_strategies[j]['king_name'])))
+                    score += int(float(all_strategies[k]['damage'][:-1]) * float(
+                        get_multiplying_power(all_strategies[k]['king_name'])))
+                    one_feasible = dict()
+                    one_feasible["first_team"] = all_strategies[i]
+                    one_feasible["second_team"] = all_strategies[j]
+                    one_feasible["third_team"] = all_strategies[k]
+                    one_feasible["score"] = score
+                    result["best_feasible"].append(one_feasible)
+    # 开始排序
+    print("开始排序，共有{}个排刀".format(len(result["best_feasible"])))
+    result["best_feasible"].sort(key=lambda s: (s.get("score"), 0), reverse=True)
+    result["number"] = len(result["best_feasible"])
+    return result
 
 
-def calculate():
+def compute():
     global config
     # 读取配置文件
     config = utils.check_config(config)
-    print(config)
-    print(config['stage'])
-    print(config['ban_list'])
-
     # 重要参数
-    p_list = config["ban_list"]
-    file_src = "./temp/out_{}.txt".format(config['stage'])
-
-    with open('./temp/data.json', 'r') as file:
-        temp_dict = json.load(file)
-
-    file = open(file_src, 'w')
-    dict_out = get_strategies(temp_dict)
-    if len(p_list) != 0:
-        file.write('筛掉了含有')
-        file.write(p_list[0])
-        for i in range(1, len(p_list)):
-            file.write('，')
-            file.write(p_list[i])
-        file.write('的刀\n')
-    file.write('总共有：' + str(dict_out['number']) + '种方案，按毛分从高到低排序。\n')
-    for i in range(0, dict_out['number']):
-        file.write('毛分：' + str(dict_out['best_feasible'][i]['score']) + 'w  i=' + str(i + 1) + '\n')
-        file.write('第一刀：编号：' + dict_out['best_feasible'][i]['first_team']['id'] + '  BOSS：' +
-                   dict_out['best_feasible'][i]['first_team']['king_name'] + '  阵容：' + str(
-            dict_out['best_feasible'][i]['first_team']['princess_1']) + '，' + str(
-            dict_out['best_feasible'][i]['first_team']['princess_2']) + '，' + str(
-            dict_out['best_feasible'][i]['first_team']['princess_3']) + '，' + str(
-            dict_out['best_feasible'][i]['first_team']['princess_4']) + '，' + str(
-            dict_out['best_feasible'][i]['first_team']['princess_5']) + '  伤害：' +
-                   dict_out['best_feasible'][i]['first_team']['damage'] + '\n')
-        file.write('第二刀：编号：' + dict_out['best_feasible'][i]['second_team']['id'] + '  BOSS：' +
-                   dict_out['best_feasible'][i]['second_team']['king_name'] + '  阵容：' + str(
-            dict_out['best_feasible'][i]['second_team']['princess_1']) + '，' + str(
-            dict_out['best_feasible'][i]['second_team']['princess_2']) + '，' + str(
-            dict_out['best_feasible'][i]['second_team']['princess_3']) + '，' + str(
-            dict_out['best_feasible'][i]['second_team']['princess_4']) + '，' + str(
-            dict_out['best_feasible'][i]['second_team']['princess_5']) + '  伤害：' +
-                   dict_out['best_feasible'][i]['second_team']['damage'] + '\n')
-        file.write('第三刀：编号：' + dict_out['best_feasible'][i]['third_team']['id'] + '  BOSS：' +
-                   dict_out['best_feasible'][i]['third_team']['king_name'] + '  阵容：' + str(
-            dict_out['best_feasible'][i]['third_team']['princess_1']) + '，' + str(
-            dict_out['best_feasible'][i]['third_team']['princess_2']) + '，' + str(
-            dict_out['best_feasible'][i]['third_team']['princess_3']) + '，' + str(
-            dict_out['best_feasible'][i]['third_team']['princess_4']) + '，' + str(
-            dict_out['best_feasible'][i]['third_team']['princess_5']) + '  伤害：' +
-                   dict_out['best_feasible'][i]['third_team']['damage'] + '\n')
-        print('写好一组 i=', i)
-    file.close()
-    print('写入完毕，关闭文件，程序结束')
+    ban_list = config["ban_list"]
+    miss_list = config["miss_list"]
+    file_src = "./temp/out_{}.txt".format(config["stage"])
+    # 加载预处理数据
+    with open("./temp/data.json", "r") as file:
+        data = json.load(file)
+    data = get_strategies(data, miss_list)
+    print("开始写入 {}".format(file_src))
+    with open(file_src, "w") as file:
+        if len(ban_list) != 0:
+            file.write("筛掉了含有")
+            file.write(ban_list[0])
+            for i in range(1, len(ban_list)):
+                file.write("，")
+                file.write(ban_list[i])
+            file.write("的刀\n")
+        file.write("总共有：{}种方案，按毛分从高到低排序。\n".format(data["number"]))
+        for i in range(0, data["number"]):
+            file.write("毛分：{}w i={}\n".format(data["best_feasible"][i]["score"], i + 1))
+            file.write("第一刀：编号：{}  BOSS：{}  阵容：{}，{}，{}，{}，{}  伤害：{}\n".format(
+                data["best_feasible"][i]["first_team"]["id"],
+                data["best_feasible"][i]["first_team"]["king_name"],
+                data["best_feasible"][i]["first_team"]["princess_1"],
+                data["best_feasible"][i]["first_team"]["princess_2"],
+                data["best_feasible"][i]["first_team"]["princess_3"],
+                data["best_feasible"][i]["first_team"]["princess_4"],
+                data["best_feasible"][i]["first_team"]["princess_5"],
+                data["best_feasible"][i]["first_team"]["damage"]
+            ))
+            file.write("第二刀：编号：{}  BOSS：{}  阵容：{}，{}，{}，{}，{}  伤害：{}\n".format(
+                data["best_feasible"][i]["second_team"]["id"],
+                data["best_feasible"][i]["second_team"]["king_name"],
+                data["best_feasible"][i]["second_team"]["princess_1"],
+                data["best_feasible"][i]["second_team"]["princess_2"],
+                data["best_feasible"][i]["second_team"]["princess_3"],
+                data["best_feasible"][i]["second_team"]["princess_4"],
+                data["best_feasible"][i]["second_team"]["princess_5"],
+                data["best_feasible"][i]["second_team"]["damage"]
+            ))
+            file.write("第三刀：编号：{}  BOSS：{}  阵容：{}，{}，{}，{}，{}  伤害：{}\n".format(
+                data["best_feasible"][i]["third_team"]["id"],
+                data["best_feasible"][i]["third_team"]["king_name"],
+                data["best_feasible"][i]["third_team"]["princess_1"],
+                data["best_feasible"][i]["third_team"]["princess_2"],
+                data["best_feasible"][i]["third_team"]["princess_3"],
+                data["best_feasible"][i]["third_team"]["princess_4"],
+                data["best_feasible"][i]["third_team"]["princess_5"],
+                data["best_feasible"][i]["third_team"]["damage"]
+            ))
+    print("写入完毕，程序结束")
 
 
 def main():
     make_data()
-    calculate()
+    compute()
     return 0
 
 
 config = dict()
+multiplying_power = {
+    "A1": 1.0,
+    "A2": 1.0,
+    "A3": 1.3,
+    "A4": 1.3,
+    "A5": 1.5,
+    "B1": 1.4,
+    "B2": 1.4,
+    "B3": 1.8,
+    "B4": 1.8,
+    "B5": 2.0,
+    "C1": 2.0,
+    "C2": 2.0,
+    "C3": 2.5,
+    "C4": 2.5,
+    "C5": 3.0
+}
 
 if __name__ == "__main__":
     exit(main())
+
+
