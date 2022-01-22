@@ -190,6 +190,8 @@ def compute():
                 file.write("，")
                 file.write(ban_list[i])
             file.write("的刀\n")
+        else:
+            file.write("没有需要筛掉的刀\n")
         file.write("总共有：{}种方案，按毛分从高到低排序。\n".format(data["number"]))
         for i in range(0, data["number"]):
             file.write("毛分：{}w i={}\n".format(data["best_feasible"][i]["score"], i + 1))
