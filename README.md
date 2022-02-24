@@ -48,7 +48,7 @@ simplejson		3.17.2
 
   三阶段：stage_3.xlsx
 
-  放入同级目录中。
+  放入同级目录中。(***注意：如果表格数据未填充，运行脚本会报错***)
 
 * 修改 config.json 配置文件
 
@@ -89,4 +89,6 @@ simplejson		3.17.2
 ## 注意事项
 
 注意修改config.json文件
+
+注意填充excel表格
 

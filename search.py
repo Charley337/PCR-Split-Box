@@ -1,5 +1,6 @@
 import sys
 import utils
+import os
 
 
 # 判断是否符合条件的函数
@@ -187,6 +188,7 @@ def main():
         search(argv, mode)
     else:
         search(sys.argv)
+    os.system(r"result.txt")
     return 0
 
 

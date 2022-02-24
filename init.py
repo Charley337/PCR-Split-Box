@@ -1,19 +1,25 @@
-import json
+import os
 
 
 def main():
     with open("config.json", "w", encoding="utf-8") as fp:
-        config = dict()
-        config["stage"] = 1
-        config["ban_list"] = ["万圣忍", "万圣兔"]
-        config["miss_list"] = ["圣克", "圣千", "露娜"]
-        json.dump(config, fp, ensure_ascii=False)
+        fp.write("""{
+  "stage": 1,
+  "ban_list": [
+    
+  ],
+  "miss_list": [
+    
+  ]
+}""")
     with open("stage_1.xlsx", "w", encoding="utf-8") as fp:
         pass
     with open("stage_2.xlsx", "w", encoding="utf-8") as fp:
         pass
     with open("stage_3.xlsx", "w", encoding="utf-8") as fp:
         pass
+    if os.path.exists("temp") is False:
+        os.mkdir("temp")
     print("finish")
     return 0
 
