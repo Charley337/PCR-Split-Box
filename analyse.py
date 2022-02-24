@@ -19,36 +19,36 @@ def make_data():
     ban_list = config["ban_list"]
     data_src = "./stage_{}.xlsx".format(config["stage"])
     # 打开表格
-    table_file = xlrd.open_workbook(data_src)
-    table = table_file.sheet_by_index(0)
-    # 开始制作数据文件
-    cnt = 0
-    res_item = dict()
-    res_data = dict()
-    print("开始数据预处理")
-    for i in range(0, table.nrows):
-        table_row = table.row_values(i)
-        if table_row[0] == '' or table_row[2] == '':
-            continue
-        # 筛掉禁用的角色
-        if is_princess_banned(ban_list, table_row):
-            continue
-        # 制作数据
-        for j in range(2, 7):
-            if table_row[j] == 511.0:
-                table_row[j] = "511"
-        res_item["king_name"] = table_row[0]
-        res_item["id"] = table_row[1]
-        res_item["princess_1"] = table_row[2]
-        res_item["princess_2"] = table_row[3]
-        res_item["princess_3"] = table_row[4]
-        res_item["princess_4"] = table_row[5]
-        res_item["princess_5"] = table_row[6]
-        res_item["damage"] = table_row[7]
-        res_index = "pcr_strategies_{}".format(cnt)
-        res_data[res_index] = json.dumps(res_item)
-        res_item.clear()
-        cnt += 1
+    with xlrd.open_workbook(data_src) as table_file:
+        table = table_file.sheet_by_index(0)
+        # 开始制作数据文件
+        cnt = 0
+        res_item = dict()
+        res_data = dict()
+        print("开始数据预处理")
+        for i in range(0, table.nrows):
+            table_row = table.row_values(i)
+            if table_row[0] == '' or table_row[2] == '':
+                continue
+            # 筛掉禁用的角色
+            if is_princess_banned(ban_list, table_row):
+                continue
+            # 制作数据
+            for j in range(2, 7):
+                if table_row[j] == 511.0:
+                    table_row[j] = "511"
+            res_item["king_name"] = table_row[0]
+            res_item["id"] = table_row[1]
+            res_item["princess_1"] = table_row[2]
+            res_item["princess_2"] = table_row[3]
+            res_item["princess_3"] = table_row[4]
+            res_item["princess_4"] = table_row[5]
+            res_item["princess_5"] = table_row[6]
+            res_item["damage"] = table_row[7]
+            res_index = "pcr_strategies_{}".format(cnt)
+            res_data[res_index] = json.dumps(res_item)
+            res_item.clear()
+            cnt += 1
     res_data = json.dumps(res_data)
     # 写入文件
     print("将预处理数据写入 ./temp/data.json 文件中")
