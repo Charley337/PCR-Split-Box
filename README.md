@@ -60,7 +60,7 @@ simplejson		3.17.2
 
   修改时注意格式
 
-  ![](image/image_1.png)
+  ![](image/img_001.png)
 
 * 开始数据分析
 
@@ -82,7 +82,7 @@ simplejson		3.17.2
   python search -a 1 2 3 ct203
   ```
 
-  ![](image/image_2.png)
+  ![](image/img_002.png)
 
   
 
