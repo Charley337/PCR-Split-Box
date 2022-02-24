@@ -18,6 +18,12 @@ xlrd					1.2.0
 
 simplejson		3.17.2
 
+一键安装python包：
+
+```commandline
+pip install -r requirement.txt
+```
+
 ## 运行方法
 
 * 安装项目：

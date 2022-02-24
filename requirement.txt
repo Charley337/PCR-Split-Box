@@ -1,0 +1,2 @@
+xlrd==1.2.0
+simplejson==3.17.2
