@@ -21,6 +21,6 @@ python main.py C score never
 
 ## 2022/09/27更新
 
-制作了一个简陋的gui界面
+制作了一个简陋的 gui 界面 app.py
 
-app.py
+main.py 已经废弃，不再更新，现在主要开发 gui 界面
