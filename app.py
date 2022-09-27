@@ -18,8 +18,7 @@ stage = 0
 old_mode = ""
 data_state = False
 # TODO: 信号量
-lock_request = threading.Semaphore(1)
-lock_search = threading.Semaphore(1)
+lock_gui = threading.Semaphore(1)
 # TODO: 基本gui配置
 gui = tk.Tk()
 button_frame = tk.Frame(gui)
@@ -174,15 +173,15 @@ def onclick_button_search(event):
             else:
                 raise Exception("unknown error!")
         search_plans(str(temp_king1), str(temp_king2), str(temp_king3), temp_used)
-        lock_search.release()
+        lock_gui.release()
 
-    if not lock_search.acquire(blocking=False):
+    if not lock_gui.acquire(blocking=False):
         winsound.MessageBeep()
         return
     if not data_state or homeworks is None:
         msg_box_rewrite("需要先获取数据")
         winsound.MessageBeep()
-        lock_search.release()
+        lock_gui.release()
         return
     temp_stage = combo_stage.current()
     temp_king1 = combo_king1.current()
@@ -194,7 +193,7 @@ def onclick_button_search(event):
     if temp_stage * temp_king1 * temp_king2 * temp_king3 * temp_mode == 0:
         msg_box_rewrite("信息不完整")
         winsound.MessageBeep()
-        lock_search.release()
+        lock_gui.release()
         return
     msg_box_rewrite("正在搜索中，请稍后...")
     temp_mode_list = ["none", "auto", "normal"]
@@ -220,9 +219,9 @@ def onclick_button_request(event):
             msgbox.showerror(title="错误", message="网络错误! (可能要爬个梯子)")
             label_data_state.config(text="未获取数据", fg="red")
             msg_box_rewrite("获取失败，可能需要爬个梯子")
-        lock_request.release()
+        lock_gui.release()
 
-    if not lock_request.acquire(blocking=False):
+    if not lock_gui.acquire(blocking=False):
         winsound.MessageBeep()
     else:
         msg_box_rewrite("开始获取数据，请稍等...")
