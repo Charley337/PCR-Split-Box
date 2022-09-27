@@ -11,12 +11,7 @@
 运行命令：
 
 ```
-python main.py [BOSS] [ORDER_KEY] [REQUEST_MODE]
-
-e.g.
-python main.py A score always
-python main.py B damage auto
-python main.py C score never
+python app.py
 ```
 
 ## 2022/09/27更新
