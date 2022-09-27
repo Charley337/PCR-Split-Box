@@ -166,6 +166,7 @@ def onclick_button_search(event):
         if stage != stage_now or old_mode != mode:
             stage = stage_now
             old_mode = mode
+            plans = None
             if mode == "auto":
                 plans = homeworks.get_plans_auto(stage=temp_stage_list[temp_stage], sort_key="score", reverse=True)
             elif mode == "normal":
