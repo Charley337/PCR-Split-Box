@@ -8,7 +8,8 @@ import time
 score_rate = {"A1": 1.2, "A2": 1.2, "A3": 1.3, "A4": 1.4, "A5": 1.5,
               "B1": 1.6, "B2": 1.6, "B3": 1.8, "B4": 1.9, "B5": 2.0,
               "C1": 2.0, "C2": 2.0, "C3": 2.4, "C4": 2.4, "C5": 2.6,
-              "D1": 3.5, "D2": 3.5, "D3": 3.7, "D4": 3.8, "D5": 4.0}
+              "D1": 3.5, "D2": 3.5, "D3": 3.7, "D4": 3.8, "D5": 4.0,
+              "E1": 3.5, "E2": 3.5, "E3": 3.7, "E4": 3.8, "E5": 4.0}
 sys_name = "Ikaros"
 config = dict()
 ban_list = []
@@ -51,6 +52,7 @@ class Homeworks:
         self.ns2 = 0
         self.ns3 = 0
         self.ns4 = 0
+        self.ns5 = 0
         for hw in self.hws:
             if hw.sn[0] == "A":
                 self.ns1 += 1
@@ -58,9 +60,12 @@ class Homeworks:
                 self.ns2 += 1
             elif hw.sn[0] == "C":
                 self.ns3 += 1
-            else:
+            elif hw.sn[0] == "D":
                 self.ns4 += 1
-        self.get_stage = {"A": self.get_stage_a, "B": self.get_stage_b, "C": self.get_stage_c, "D": self.get_stage_d}
+            else:
+                self.ns5 += 1
+        self.get_stage = {"A": self.get_stage_a, "B": self.get_stage_b, "C": self.get_stage_c, "D": self.get_stage_d,
+                          "E": self.get_stage_e}
 
     def get_stage_a(self):
         """获取 A 面所有作业的切片
@@ -74,7 +79,10 @@ class Homeworks:
         return self.hws[self.ns1+self.ns2:self.ns1+self.ns2+self.ns3]
 
     def get_stage_d(self):
-        return self.hws[self.ns1+self.ns2+self.ns3:]
+        return self.hws[self.ns1+self.ns2+self.ns3:self.ns1+self.ns2+self.ns3+self.ns4]
+
+    def get_stage_e(self):
+        return self.hws[self.ns1+self.ns2+self.ns3+self.ns4:]
 
     def get_plans(self, stage="C", sort_key="damage", reverse=False):
         """
@@ -162,14 +170,14 @@ class DataHandler:
         sys_print("icon status: {}".format(icon.status_code))
         icon = json.loads(icon.text)
         with open(self.icon_path, "w", encoding="UTF-8") as fp:
-            json.dump(icon, fp)
+            json.dump(icon, fp, ensure_ascii=False)
         sys_print("wait 1 sec...")
         time.sleep(1)
         data = requests.get(self.base_url + self.data_url, headers=self.headers)
         sys_print("data status: {}".format(data.status_code))
         data = json.loads(data.text)
         with open(self.data_path, "w", encoding="UTF-8") as fp:
-            json.dump(data, fp)
+            json.dump(data, fp, ensure_ascii=False)
         id2name = dict()
         length_i = len(icon["data"])
         for i in range(length_i):
@@ -177,7 +185,7 @@ class DataHandler:
             for j in range(length_j):
                 id2name[icon["data"][i][j]["id"]] = icon["data"][i][j]["iconValue"]
         with open(self.id2name_path, "w", encoding="UTF-8") as fp:
-            json.dump(id2name, fp)
+            json.dump(id2name, fp, ensure_ascii=False)
 
     def get_hws_from_data_files(self, mode="auto") -> Homeworks:
         """通过数据接口收到的数据获取作业数据"""
@@ -264,7 +272,7 @@ def load_config():
         config["ban_list"] = []
         config["lack_list"] = []
         with open(config_path, "w", encoding="UTF-8") as fp:
-            json.dump(config, fp)
+            json.dump(config, fp, ensure_ascii=False)
     else:
         with open(config_path, "r", encoding="UTF-8") as fp:
             config = json.load(fp)

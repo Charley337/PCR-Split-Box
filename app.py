@@ -28,7 +28,7 @@ search_frame = tk.Frame(gui)
 button_search = tk.Button(search_frame, text="搜索分刀方案")
 combo_stage = ttk.Combobox(
     search_frame, state="readonly", width=11,
-    values=["请选择 - 阶段", "A 面", "B 面", "C 面", "D 面"]
+    values=["请选择 - 阶段", "A 面", "B 面", "C 面", "D 面", "E 面"]
 )
 combo_king1 = ttk.Combobox(
     search_frame, state="readonly", width=17,
@@ -161,15 +161,15 @@ def onclick_button_search(event):
         global old_mode
         if mode not in ["normal", "auto"]:
             raise ValueError('mode can not be "{}"'.format(mode))
-        temp_stage_list = ["none", "A", "B", "C", "D"]
+        temp_stage_list = ["none", "A", "B", "C", "D", "E"]
         if stage != stage_now or old_mode != mode:
             stage = stage_now
             old_mode = mode
             plans = None
             if mode == "auto":
-                plans = homeworks.get_plans_auto(stage=temp_stage_list[temp_stage], sort_key="score", reverse=True)
+                plans = homeworks.get_plans_auto(stage=temp_stage_list[stage_now], sort_key="score", reverse=True)
             elif mode == "normal":
-                plans = homeworks.get_plans(stage=temp_stage_list[temp_stage], sort_key="score", reverse=True)
+                plans = homeworks.get_plans(stage=temp_stage_list[stage_now], sort_key="score", reverse=True)
             else:
                 raise Exception("unknown error!")
         search_plans(str(temp_king1), str(temp_king2), str(temp_king3), temp_used)
